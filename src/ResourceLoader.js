@@ -124,6 +124,20 @@ export default class ResourceLoader {
         return typeof this.cache[key] !== 'undefined';
     }
 
+    getLocation(href) {
+        var match = href.match(/^(https?\:)\/\/(([^:\/?#]*)(?:\:([0-9]+))?)([\/]{0,1}[^?#]*)(\?[^#]*|)(#.*|)$/);
+        return match && {
+            href: href,
+            protocol: match[1],
+            host: match[2],
+            hostname: match[3],
+            port: match[4],
+            pathname: match[5],
+            search: match[6],
+            hash: match[7]
+        }
+    }
+
     addImage(key: string, src: string, useCORS: boolean): string {
         if (__DEV__) {
             this.logger.log(`Added image ${key.substring(0, 256)}`);
@@ -137,9 +151,8 @@ export default class ResourceLoader {
                 if (!supportsDataImages || useCORS) {
                     /***************** HACK **********************/
                         //get the host url
-                        var parser = document.createElement('a');
-                        parser.href = src;
-                        var host = parser.host;
+                        var location = this.getLocation(src);
+                        var host = location.protocol + "://" + location.host;
 
                         if (this.options.authCORSDomains.indexOf(host) > -1) {
                             img.crossOrigin = 'use-credentials';
