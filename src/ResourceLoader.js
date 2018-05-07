@@ -152,7 +152,7 @@ export default class ResourceLoader {
                     /***************** HACK **********************/
                         //get the host url
                         var location = this.getLocation(src);
-                        var host = location.protocol + "://" + location.host;
+                        var host = location.protocol + "//" + location.host;
 
                         if (this.options.authCORSDomains.indexOf(host) > -1) {
                             img.crossOrigin = 'use-credentials';

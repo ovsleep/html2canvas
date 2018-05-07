@@ -61,6 +61,9 @@ import {
     reformatInputBounds
 } from './Input';
 import {getListOwner} from './ListItem';
+import FEATURES from './Feature';
+
+var canvg = require('canvg-browser');
 
 type StyleDeclaration = {
     background: Background,
@@ -273,10 +276,26 @@ const getImage = (node: HTMLElement | SVGSVGElement, resourceLoader: ResourceLoa
         node instanceof node.ownerDocument.defaultView.SVGSVGElement ||
         node instanceof SVGSVGElement
     ) {
+        /* ********** Start SVG fix for IE11 ************** */
         const s = new XMLSerializer();
-        return resourceLoader.loadImage(
-            `data:image/svg+xml,${encodeURIComponent(s.serializeToString(node))}`
-        );
+
+        if(!FEATURES.SUPPORT_SVG_DRAWING){
+            var tempCanvas = document.createElement('canvas');
+            tempCanvas.id = '_temp_canvas';
+    
+            document.body.appendChild(tempCanvas); // adds the canvas to the body element
+    
+            canvg(canv, s.serializeToString(node)); // convert svg to canvas
+            var result = getImage(canv, resourceLoader); // resolve as canvas node
+            document.body.removeChild(canv); // remove temp canvas
+            return result;
+        }
+        /* ********** Ends SVG fix for IE11 ************** */
+        else{
+            return resourceLoader.loadImage(
+                `data:image/svg+xml,${encodeURIComponent(s.serializeToString(node))}`
+            );
+        }
     }
     switch (node.tagName) {
         case 'IMG':
